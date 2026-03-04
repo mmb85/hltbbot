@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const TelegramBot = require("node-telegram-bot-api");
 const buscarJuego = require("./scraper");
-const LRU = require("lru-cache");
+const { LRUCache } = require('lru-cache');
 
 const token = process.env.BOT_TOKEN;
 
@@ -14,7 +14,7 @@ Evita scrapear lo mismo muchas veces
 */
 const cache = new LRU({
     max: 100,
-    ttl: 1000 * 60 * 5
+    ttl: 1000 * 60 * 60
 });
 
 /*
