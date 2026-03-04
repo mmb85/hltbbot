@@ -12,23 +12,35 @@ function customRoundHours(seconds) {
     if (!seconds) return null;
 
     const hoursRaw = seconds / 3600;
-
     const integerPart = Math.floor(hoursRaw);
     const decimalPart = hoursRaw - integerPart;
 
     if (decimalPart < 0.3) return integerPart;
-
     return integerPart + 0.5;
 }
 
 async function buscarJuego(nombre) {
+
     const browser = await puppeteer.launch({
-        headless: "new"
+        headless: true,
+
+        // 🔥 CLAVE PARA RENDER
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu"
+        ]
     });
 
     const page = await browser.newPage();
 
     let resultData = null;
+
+    // Mejorar fingerprint básico
+    await page.setUserAgent(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
+    );
 
     // Intercept API response
     page.on("response", async response => {
@@ -58,7 +70,9 @@ async function buscarJuego(nombre) {
                     };
                 }
             }
-        } catch (_) {}
+        } catch (err) {
+            console.error("Intercept error:", err.message);
+        }
     });
 
     const query = encodeURIComponent(nombre);
@@ -66,7 +80,8 @@ async function buscarJuego(nombre) {
     await page.goto(
         `https://howlongtobeat.com/?q=${query}`,
         {
-            waitUntil: "networkidle2"
+            waitUntil: "networkidle2",
+            timeout: 30000
         }
     );
 
@@ -77,6 +92,7 @@ async function buscarJuego(nombre) {
     }
 
     await browser.close();
+
     return resultData;
 }
 
